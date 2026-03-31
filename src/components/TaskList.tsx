@@ -58,36 +58,38 @@ export function TaskList({ tasks, globalThoughts }: { tasks: Map<string, TaskSta
       )}
 
       {/* The Tree Structure */}
-      <div className="relative flex flex-col items-center w-full max-w-6xl">
+      <div className="relative flex flex-col items-center w-full">
         {taskGroups.map((group, idx) => (
           <div key={idx} className="w-full flex flex-col items-center">
             {/* Horizontal Branching for Parallel Groups */}
             {group.type === 'parallel' ? (
-              <div className="w-full flex flex-col items-center">
-                {/* Branch Line */}
-                <div className="h-10 w-px bg-slate-700 mb-0"></div>
-                <div className="relative w-full flex justify-center">
-                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-px bg-slate-700"></div>
-                   <div className="flex justify-center gap-8 pt-4 pb-12 overflow-x-auto w-full px-4">
+              <div className="w-full flex flex-col items-center my-12">
+                {/* Branch Header */}
+                <div className="flex flex-col items-center mb-0">
+                  <div className="h-12 w-px bg-slate-700"></div>
+                  <div className="px-3 py-1 bg-slate-900 border border-slate-700 rounded-full mb-4 shadow-lg shadow-blue-500/5">
+                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-400/80">Concurrent Execution</span>
+                  </div>
+                </div>
+
+                <div className="relative w-full p-8 bg-slate-900/20 border border-dashed border-slate-800 rounded-[3rem] backdrop-blur-[2px]">
+                   <div className="flex justify-center gap-10 flex-wrap lg:flex-nowrap">
                      {group.items.map(task => (
-                       <div key={task.id} className="relative flex flex-col items-center min-w-[280px]">
-                         <div className="absolute top-0 w-px h-4 bg-slate-700 -translate-y-4"></div>
+                       <div key={task.id} className="relative flex flex-col items-center min-w-[320px] max-w-sm">
                          <TaskItem task={task} />
                        </div>
                      ))}
                    </div>
                 </div>
-                {/* Re-merge Line */}
-                <div className="relative w-full flex justify-center mb-10">
-                   <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-px bg-slate-700"></div>
-                   <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-px h-10 bg-slate-700 translate-y-full"></div>
-                </div>
+                
+                {/* Re-merge Footer */}
+                <div className="h-12 w-px bg-slate-700"></div>
               </div>
             ) : (
               /* Sequential Item */
-              <div className="flex flex-col items-center mb-10">
-                {idx > 0 && <div className="h-10 w-px bg-slate-700"></div>}
-                <div className="max-w-xl w-full">
+              <div className="flex flex-col items-center w-full">
+                {idx > 0 && <div className="h-12 w-px bg-slate-700"></div>}
+                <div className="max-w-2xl w-full">
                   <TaskItem task={group.items[0]} />
                 </div>
               </div>

@@ -60,22 +60,39 @@ export function AgentRunPanel() {
               elapsedTimeMs={state.status === 'complete' ? state.elapsedTime : currentElapsed} 
             />
             
-            <div className="flex-1 relative pb-24">
-              {state.errorMessage && (
-                <div className="max-w-4xl mx-auto mt-8 p-4 bg-red-950/40 border border-red-500/30 rounded-2xl flex items-start gap-4 text-red-200 shadow-2xl">
-                  <AlertTriangle className="w-6 h-6 shrink-0 text-red-500" />
-                  <p className="text-sm font-medium leading-relaxed">{state.errorMessage}</p>
+            <div className="flex-1 grid grid-cols-12 gap-8 px-8 pb-24 max-w-[1600px] mx-auto w-full">
+              {/* Left Column: Process Explorer */}
+              <div className="col-span-12 lg:col-span-8 space-y-6">
+                {state.errorMessage && (
+                  <div className="p-4 bg-red-950/40 border border-red-500/30 rounded-2xl flex items-start gap-4 text-red-200 shadow-2xl mb-8">
+                    <AlertTriangle className="w-6 h-6 shrink-0 text-red-500" />
+                    <p className="text-sm font-medium leading-relaxed">{state.errorMessage}</p>
+                  </div>
+                )}
+                
+                <div className="relative">
+                  <TaskList tasks={state.tasks} globalThoughts={state.globalThoughts} />
                 </div>
-              )}
-              
-              <TaskList tasks={state.tasks} globalThoughts={state.globalThoughts} />
+              </div>
 
-              {/* Final Output if complete */}
-              {state.finalOutput && (
-                <div className="max-w-4xl mx-auto px-6">
-                  <FinalOutput output={state.finalOutput} />
+              {/* Right Column: Intelligence Synthesis (Sticky) */}
+              <div className="col-span-12 lg:col-span-4 border-l border-slate-800/50 pl-8">
+                <div className="sticky top-24 space-y-6">
+                   <div className="flex items-center gap-2 mb-4">
+                      <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                      <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400">Analysis Intelligence</h2>
+                   </div>
+                   
+                   {state.finalOutput ? (
+                     <FinalOutput output={state.finalOutput} />
+                   ) : (
+                     <div className="p-8 border border-dashed border-slate-800 rounded-3xl text-center space-y-4">
+                        <Activity className="w-8 h-8 text-slate-700 mx-auto animate-pulse" />
+                        <p className="text-xs text-slate-500 font-medium">Synthesis will appear here as the research matures...</p>
+                     </div>
+                   )}
                 </div>
-              )}
+              </div>
             </div>
           </>
         )}

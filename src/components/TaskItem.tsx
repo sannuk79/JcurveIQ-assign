@@ -1,50 +1,48 @@
-import { useState } from 'react';
 import { TaskState } from '../types';
-import { Loader2, CheckCircle2, AlertCircle, FastForward, Activity, ChevronDown, ChevronRight, Link } from 'lucide-react';
+import { CheckCircle2, AlertCircle, FastForward, Activity, Loader2 } from 'lucide-react';
 
 interface TaskItemProps {
   task: TaskState;
 }
 
 export function TaskItem({ task }: TaskItemProps) {
-  const [showThoughts, setShowThoughts] = useState(false);
 
   // Status mapping
   const statusConfig = {
     running: { 
-      icon: Loader2, 
-      color: 'text-blue-400', 
-      bg: 'bg-[#0A0A0A]', 
-      headerBg: 'bg-blue-600/10',
-      border: 'border-blue-500/40', 
-      glow: 'shadow-[0_0_15px_rgba(59,130,246,0.15)]',
-      animate: 'animate-spin' 
+      icon: Activity, 
+      color: 'text-cyan-400', 
+      bg: 'bg-[#050505]', 
+      headerBg: 'bg-cyan-600/5',
+      border: 'border-cyan-500/30', 
+      glow: 'shadow-[0_0_20px_rgba(34,211,238,0.1)]',
+      animate: 'animate-pulse' 
     },
     complete: { 
       icon: CheckCircle2, 
       color: 'text-emerald-400', 
-      bg: 'bg-[#0A0A0A]', 
-      headerBg: 'bg-emerald-600/10',
-      border: 'border-emerald-500/40', 
-      glow: 'shadow-[0_0_15px_rgba(16,185,129,0.15)]',
+      bg: 'bg-[#050505]', 
+      headerBg: 'bg-emerald-600/5',
+      border: 'border-emerald-500/30', 
+      glow: 'shadow-[0_0_20px_rgba(16,185,129,0.1)]',
       animate: '' 
     },
     failed: { 
       icon: AlertCircle, 
-      color: 'text-red-400', 
-      bg: 'bg-[#0A0A0A]', 
+      color: 'text-red-500', 
+      bg: 'bg-red-950/5', 
       headerBg: 'bg-red-600/10',
-      border: 'border-red-500/40', 
-      glow: 'shadow-[0_0_15px_rgba(239,68,68,0.15)]',
+      border: 'border-red-500/50', 
+      glow: 'shadow-[0_0_25px_rgba(239,68,68,0.2)]',
       animate: '' 
     },
     cancelled: { 
       icon: FastForward, 
-      color: 'text-indigo-400', 
-      bg: 'bg-[#0A0A0A]', 
-      headerBg: 'bg-indigo-600/10',
-      border: 'border-indigo-500/40', 
-      glow: 'shadow-[0_0_15px_rgba(99,102,241,0.15)]',
+      color: 'text-slate-500', 
+      bg: 'bg-slate-900/40', 
+      headerBg: 'bg-slate-800/10',
+      border: 'border-slate-700/50', 
+      glow: 'shadow-none',
       animate: '' 
     }
   };
@@ -58,86 +56,84 @@ export function TaskItem({ task }: TaskItemProps) {
   };
 
   return (
-    <div className={`flex flex-col rounded-2xl overflow-hidden border transition-all duration-500 ${currentConf.border} ${currentConf.bg} ${currentConf.glow} hover:bg-[#0F0F0F]`}>
+    <div className={`flex flex-col rounded-3xl overflow-hidden border transition-all duration-700 ${currentConf.border} ${currentConf.bg} ${currentConf.glow} hover:border-white/20 group`}>
       {/* Task Header */}
-      <div className={`p-4 ${currentConf.headerBg} flex items-center justify-between border-b ${currentConf.border}`}>
-        <div className="flex items-center gap-3">
-          <Icon className={`w-5 h-5 ${currentConf.color} ${currentConf.animate}`} />
+      <div className={`p-5 ${currentConf.headerBg} flex items-center justify-between border-b ${currentConf.border}`}>
+        <div className="flex items-center gap-4">
+          <div className={`p-2 rounded-xl bg-black/40 border ${currentConf.border}`}>
+            <Icon className={`w-5 h-5 ${currentConf.color} ${currentConf.animate}`} />
+          </div>
           <div>
-            <h3 className="text-sm font-semibold text-slate-100 tracking-tight">{task.label}</h3>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest flex items-center gap-1.5 px-2 py-0.5 bg-slate-900 border border-slate-800 rounded-full">
-                <Activity className="w-2.5 h-2.5" />
+            <h3 className="text-sm font-bold text-slate-100 tracking-tight transition-colors group-hover:text-white">{task.label}</h3>
+            <div className="flex items-center gap-2 mt-1.5">
+              <span className="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5 px-2 py-0.5 bg-black/40 border border-slate-800 rounded-md">
                 {task.agent}
               </span>
-              
-              {task.dependsOn.length > 0 && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-900 border border-slate-800 text-slate-500 flex items-center gap-1.5 uppercase">
-                  <Link className="w-2.5 h-2.5" />
-                  Dep: {task.dependsOn.join(', ')}
-                </span>
-              )}
             </div>
           </div>
         </div>
 
-        <div className="text-right">
+        <div className="flex flex-col items-end gap-1.5">
           {task.status === 'cancelled' ? (
-            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${currentConf.border} ${currentConf.color} uppercase tracking-tighter shadow-sm bg-indigo-950/20`} title={task.cancelMessage || ''}>
-              {getCancelMessage()}
+            <span className="text-[9px] font-black px-2 py-0.5 rounded bg-slate-800 text-slate-400 uppercase tracking-tighter border border-slate-700">
+               {getCancelMessage()}
             </span>
           ) : (
-            <span className={`text-[10px] uppercase tracking-widest font-black ${currentConf.color}`}>
-              {task.status} {task.retryCount > 0 && task.status === 'running' && `• RETRY ${task.retryCount}`}
-            </span>
-          )}
-          
-          {task.retryCount > 0 && task.status === 'complete' && (
-             <div className="text-[9px] text-amber-500 font-bold mt-1 uppercase tracking-tighter">Automatic Recovery ✓</div>
+            <div className="flex items-center gap-2">
+               {task.retryCount > 0 && (
+                 <span className="text-[9px] font-black px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 uppercase tracking-tighter border border-amber-500/30 animate-pulse">
+                   RETRY {task.retryCount}
+                 </span>
+               )}
+               <span className={`text-[10px] font-black uppercase tracking-widest ${currentConf.color} bg-black/40 px-2 py-0.5 rounded-md border ${currentConf.border}`}>
+                 {task.status}
+               </span>
+            </div>
           )}
         </div>
       </div>
 
       {/* Task Body */}
-      <div className="p-5 flex flex-col gap-4 text-sm">
+      <div className="p-6 flex flex-col gap-5 text-sm">
         
         {task.error && task.status === 'failed' && (
-          <div className="p-3 bg-red-950/30 border border-red-500/20 rounded-xl text-red-300 text-[11px] leading-relaxed">
-            {task.error}
+          <div className="p-4 bg-red-950/40 border border-red-500/30 rounded-2xl text-red-200 text-[11px] leading-relaxed font-mono italic">
+            Error: {task.error}
           </div>
         )}
 
+        {/* Intelligence Log (Thoughts) */}
         {task.thoughts.length > 0 && (
-          <div className="flex flex-col">
-            <button 
-              onClick={() => setShowThoughts(!showThoughts)}
-              className="flex items-center gap-2 text-[10px] font-bold text-slate-500 hover:text-indigo-400 w-fit transition-all uppercase tracking-widest"
-            >
-              <div className="w-4 h-4 bg-slate-900 rounded flex items-center justify-center border border-slate-800">
-                {showThoughts ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-              </div>
-              {task.thoughts.length} Thoughts
-            </button>
-            {showThoughts && (
-              <div className="mt-3 pl-4 border-l border-indigo-500/30 space-y-2.5">
-                {task.thoughts.map((t, idx) => (
-                  <p key={idx} className="text-[12px] italic text-slate-400 leading-snug">{t.thought}</p>
-                ))}
-              </div>
-            )}
+          <div className="flex flex-col bg-black/30 rounded-2xl p-4 border border-slate-800/50">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500/50" />
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">System Intelligence Logs</span>
+            </div>
+            <div className="space-y-3 pl-3 border-l-2 border-blue-500/10">
+              {task.thoughts.map((t, idx) => (
+                <div key={idx} className="group/thought">
+                  <p className="text-[12px] font-mono italic text-slate-400 leading-relaxed translate-x-0 transition-transform group-hover/thought:translate-x-1">
+                    <span className="text-blue-500/30 mr-2">»</span>
+                    {t.thought}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
         {task.toolCalls.map((tc, idx) => (
-          <div key={idx} className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 shadow-inner">
-            <div className="flex items-center justify-between mb-2.5">
-              <span className="text-[11px] font-mono font-bold text-blue-400 uppercase tracking-widest">{tc.tool}()</span>
-              {!tc.output && <Loader2 className="w-3 h-3 text-blue-400 animate-spin" />}
+          <div key={idx} className="bg-slate-900/30 border border-slate-800/50 rounded-2xl p-5 shadow-inner group/tool">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-mono font-black text-blue-400 uppercase tracking-[0.3em] bg-blue-500/5 px-2 py-1 rounded border border-blue-500/10">{tc.tool}()</span>
+              {!tc.output && <Loader2 className="w-3.5 h-3.5 text-blue-400 animate-spin" />}
             </div>
-            <div className="text-[12px] text-slate-400 mb-3 bg-[#000]/30 p-2 rounded-lg border border-slate-800 font-mono">Input: {tc.input}</div>
+            <div className="text-[11px] text-slate-500 mb-4 bg-black/40 p-3 rounded-xl border border-slate-800/50 font-mono overflow-x-auto whitespace-pre-wrap">
+               <span className="text-slate-600 mr-2">INPUT:</span>{tc.input}
+            </div>
             {tc.output && (
-              <div className="text-[12px] text-emerald-300 border-t border-slate-800 pt-3 break-words leading-relaxed">
-                 Result: {tc.output}
+              <div className="text-[12px] text-emerald-400/90 border-t border-slate-800 pt-4 leading-relaxed font-mono">
+                 <span className="text-emerald-500/30 mr-2">OUTPUT:</span>{tc.output}
               </div>
             )}
           </div>
@@ -146,13 +142,16 @@ export function TaskItem({ task }: TaskItemProps) {
         {task.outputs.map((out, idx) => {
           const outWithScore = out as { content: string; isFinal: boolean; timestamp: number; qualityScore?: number | null };
           return (
-          <div key={idx} className={`p-4 rounded-xl border text-[13px] leading-relaxed ${outWithScore.isFinal ? 'bg-emerald-950/20 border-emerald-500/20 text-emerald-50' : 'bg-slate-900/50 border-slate-800 text-slate-400 animate-pulse'}`}>
+          <div key={idx} className={`p-5 rounded-2xl border text-[13px] leading-relaxed transition-all ${outWithScore.isFinal ? 'bg-emerald-950/10 border-emerald-500/20 text-emerald-50 shadow-lg shadow-emerald-500/5' : 'bg-slate-900/30 border-slate-800 text-slate-400'}`}>
+            <div className="flex justify-between items-start mb-3">
+               <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Task Summary</span>
+               {outWithScore.qualityScore != null && (
+                 <span className="text-[9px] font-mono font-black text-emerald-500/60 bg-emerald-500/5 px-2 py-0.5 rounded border border-emerald-500/10">
+                   RELIABILITY: {(outWithScore.qualityScore * 100).toFixed(0)}%
+                 </span>
+               )}
+            </div>
             <p className="whitespace-pre-wrap">{outWithScore.content}</p>
-            {outWithScore.qualityScore != null && (
-               <div className="mt-3 text-[10px] font-mono font-bold text-emerald-500/50 uppercase tracking-widest">
-                 Reliability: {(outWithScore.qualityScore * 100).toFixed(0)}%
-               </div>
-            )}
           </div>
           );
         })}
