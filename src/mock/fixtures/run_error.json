@@ -1,0 +1,98 @@
+[
+  {
+    "type": "run_started",
+    "run_id": "r_001",
+    "query": "Analyse Apple R&D intensity vs large-cap peers (2019–2023)",
+    "timestamp": 1700000000000
+  },
+  {
+    "type": "agent_thought",
+    "task_id": "coordinator",
+    "thought": "Breaking into: (1) Apple 10-K fetch, (2) peer identification, (3) parallel peer fetches, (4) synthesis.",
+    "timestamp": 1700000001000
+  },
+  {
+    "type": "task_spawned",
+    "task_id": "t_001",
+    "label": "Fetch Apple 10-K filings (2019–2023)",
+    "agent": "filing_fetcher",
+    "spawned_by": "coordinator",
+    "parallel_group": null,
+    "depends_on": [],
+    "timestamp": 1700000002000
+  },
+  {
+    "type": "tool_call",
+    "task_id": "t_001",
+    "tool": "sec_edgar_search",
+    "input_summary": "ticker=AAPL, form=10-K, years=2019–2023",
+    "timestamp": 1700000003000
+  },
+  {
+    "type": "tool_result",
+    "task_id": "t_001",
+    "tool": "sec_edgar_search",
+    "output_summary": "5 filings found. Extracting R&D line items...",
+    "timestamp": 1700000005000
+  },
+  {
+    "type": "partial_output",
+    "task_id": "t_001",
+    "content": "Apple R&D spend: 2019 $16.2B → 2023 $29.9B (+84%)",
+    "is_final": true,
+    "quality_score": 0.99,
+    "timestamp": 1700000007000
+  },
+  {
+    "type": "task_update",
+    "task_id": "t_001",
+    "status": "complete",
+    "timestamp": 1700000008000
+  },
+  {
+    "type": "agent_thought",
+    "task_id": "coordinator",
+    "thought": "Apple data secured. Spawning parallel fetches for peers.",
+    "timestamp": 1700000008500
+  },
+  {
+    "type": "task_spawned",
+    "task_id": "t_002",
+    "label": "Fetch Microsoft filings",
+    "agent": "filing_fetcher",
+    "spawned_by": "coordinator",
+    "parallel_group": "peer_fetch",
+    "depends_on": [],
+    "timestamp": 1700000009000
+  },
+  {
+    "type": "task_spawned",
+    "task_id": "t_003",
+    "label": "Fetch Alphabet filings",
+    "agent": "filing_fetcher",
+    "spawned_by": "coordinator",
+    "parallel_group": "peer_fetch",
+    "depends_on": [],
+    "timestamp": 1700000009200
+  },
+  {
+    "type": "tool_call",
+    "task_id": "t_003",
+    "tool": "sec_edgar_search",
+    "input_summary": "ticker=GOOGL, form=10-K",
+    "timestamp": 1700000009500
+  },
+  {
+    "type": "task_update",
+    "task_id": "t_003",
+    "status": "failed",
+    "error": "SEC EDGAR unrecoverable rate limit error. Proxy rotation failed.",
+    "timestamp": 1700000010000
+  },
+  {
+    "type": "run_error",
+    "run_id": "r_001",
+    "message": "Coordinator encountered an unrecoverable error. Partial results may be available.",
+    "timestamp": 1700000012000
+  }
+]

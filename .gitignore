@@ -1,0 +1,20 @@
+# Dependency Directories
+node_modules/
+jspm_packages/
+.agent-queue/
+
+# Build Products
+dist/
+build/
+
+# Local Planning & Workspace
+.planning/
+.gemini/
+.env
+*.local
+*.log
+
+# Heavy data/OS files
+package-lock.json
+.DS_Store
+Thumbs.db
