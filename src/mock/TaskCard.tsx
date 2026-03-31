@@ -6,6 +6,8 @@
 import { useState } from 'react';
 import { Task } from '../types';
 import ToolCallList from './ToolCallList';
+import TaskHistory from './TaskHistory';
+import TypingText from './TypingText';
 
 interface TaskCardProps {
   task: Task;
@@ -72,14 +74,25 @@ function getStatusDisplay(task: Task) {
 
 export default function TaskCard({ task, isParallel }: TaskCardProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [typingComplete, setTypingComplete] = useState(false);
+  const [lastOutputContent, setLastOutputContent] = useState('');
   const status = getStatusDisplay(task);
 
   // Get the latest output (final if available, otherwise latest partial)
   const finalOutput = task.outputs.find((o) => o.is_final);
   const latestOutput = task.outputs[task.outputs.length - 1];
+  const isLatestFinal = latestOutput?.is_final;
 
   // Get non-final outputs for history
   const partialOutputs = task.outputs.filter((o) => !o.is_final);
+
+  // Reset typing when output changes
+  useState(() => {
+    if (latestOutput && latestOutput.content !== lastOutputContent) {
+      setLastOutputContent(latestOutput.content);
+      setTypingComplete(false);
+    }
+  });
 
   return (
     <div
@@ -140,6 +153,11 @@ export default function TaskCard({ task, isParallel }: TaskCardProps) {
       {/* Expanded Content */}
       {isExpanded && (
         <div className="px-4 pb-4 space-y-3">
+          {/* Task History Timeline - Shows full lifecycle */}
+          {task.history.length > 0 && (
+            <TaskHistory history={task.history} />
+          )}
+
           {/* Tool Calls */}
           {task.tool_calls.length > 0 && (
             <ToolCallList toolCalls={task.tool_calls} />
@@ -186,9 +204,22 @@ export default function TaskCard({ task, isParallel }: TaskCardProps) {
             <div className="space-y-2">
               <div className="text-xs font-medium text-gray-500 uppercase flex items-center gap-2">
                 <span className="animate-pulse">●</span> Current Output
+                {!typingComplete && (
+                  <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                    Typing...
+                  </span>
+                )}
               </div>
               <div className="text-sm text-gray-700 bg-white/70 rounded px-3 py-2 border border-gray-200">
-                {latestOutput.content}
+                {isLatestFinal || typingComplete ? (
+                  latestOutput.content
+                ) : (
+                  <TypingText
+                    text={latestOutput.content}
+                    speed={20}
+                    onComplete={() => setTypingComplete(true)}
+                  />
+                )}
               </div>
             </div>
           )}

@@ -118,6 +118,13 @@ export interface Output {
   timestamp: number;
 }
 
+export interface TaskEvent {
+  type: 'status_change' | 'tool_call' | 'tool_result' | 'output';
+  timestamp: number;
+  details: string;
+  status?: 'running' | 'complete' | 'failed' | 'cancelled';
+}
+
 export interface Task {
   task_id: string;
   label: string;
@@ -134,6 +141,7 @@ export interface Task {
   retry_count: number;
   created_at: number;
   updated_at: number;
+  history: TaskEvent[]; // Track full lifecycle for display
 }
 
 export type RunStatus = 'idle' | 'running' | 'complete' | 'error';

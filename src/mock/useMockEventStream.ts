@@ -26,31 +26,24 @@ interface UseMockEventStreamOptions {
 /**
  * Hook that simulates real-time event streaming from a mock backend.
  * 
- * How it works:
- * 1. Takes a fixture (JSON file with pre-defined events)
- * 2. Replays events one by one using setTimeout for realistic timing
- * 3. Calls onEvent callback for each event as it "arrives"
- * 4. Cleans up all timeouts on unmount or when fixture changes
- * 
- * @param fixtureName - Which fixture to use ('run_success' or 'run_error')
- * @param options - Callbacks for event handling
+ * TIMING: Uses fixture timestamps as delays (in milliseconds)
+ * - Event at timestamp 5000 = fires 5 seconds after previous event
+ * - Creates realistic "live" feel
  */
 export function useMockEventStream(
   fixtureName: FixtureName | null,
   { onEvent, onComplete, onError }: UseMockEventStreamOptions
 ) {
-  // Store timeouts so we can clean them up
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const isRunningRef = useRef(false);
+  const eventIndexRef = useRef(0);
 
-  // Clear all pending timeouts
   const clearAllTimeouts = useCallback(() => {
     timeoutsRef.current.forEach(clearTimeout);
     timeoutsRef.current = [];
     isRunningRef.current = false;
   }, []);
 
-  // Start streaming events from the fixture
   const startStream = useCallback(() => {
     if (!fixtureName) {
       clearAllTimeouts();
@@ -65,32 +58,29 @@ export function useMockEventStream(
 
     clearAllTimeouts();
     isRunningRef.current = true;
+    eventIndexRef.current = 0;
 
     console.log(`🎬 Starting mock event stream: ${fixture.name}`);
-    console.log(`📦 Total events to stream: ${fixture.events.length}`);
+    console.log(`📦 Total events: ${fixture.events.length}`);
+    console.log(`⏱️ Total duration: ${(fixture.events[fixture.events.length - 1].timestamp / 1000).toFixed(1)}s`);
 
     // Schedule each event with realistic timing
     fixture.events.forEach((event: RunEvent, index: number) => {
-      // Calculate delay from previous event (or from start for first event)
       const previousTimestamp = index === 0 ? 0 : fixture.events[index - 1].timestamp;
       const delay = event.timestamp - previousTimestamp;
 
       const timeout = setTimeout(() => {
-        if (!isRunningRef.current) {
-          console.log(`⏹️ Event ${index + 1} skipped (stream stopped)`);
-          return;
-        }
+        if (!isRunningRef.current) return;
 
-        console.log(`📡 Event ${index + 1}/${fixture.events.length}: ${event.type}`, event);
+        eventIndexRef.current = index + 1;
+        console.log(`📡 [${(event.timestamp / 1000).toFixed(1)}s] Event ${index + 1}/${fixture.events.length}:`, event.type, event);
         onEvent(event);
 
-        // Check if this is the last event
         if (index === fixture.events.length - 1) {
           console.log('✅ Event stream complete');
           onComplete?.();
         }
 
-        // Handle error events
         if (event.type === 'run_error') {
           onError?.(event.message);
         }
@@ -100,23 +90,20 @@ export function useMockEventStream(
     });
   }, [fixtureName, onEvent, onComplete, onError, clearAllTimeouts]);
 
-  // Auto-start when fixture changes
   useEffect(() => {
     startStream();
     return () => clearAllTimeouts();
   }, [startStream, clearAllTimeouts]);
 
-  // Expose control functions
   return {
     restart: startStream,
     stop: clearAllTimeouts,
     isRunning: isRunningRef.current,
+    currentEventIndex: eventIndexRef.current,
+    totalEvents: fixtureName ? FIXTURES[fixtureName].events.length : 0,
   };
 }
 
-/**
- * Utility to get all available fixtures for a selector UI
- */
 export function getAvailableFixtures(): FixtureName[] {
   return Object.keys(FIXTURES) as FixtureName[];
 }

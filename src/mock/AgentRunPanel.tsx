@@ -2,7 +2,7 @@
 // AGENT RUN PANEL - MAIN COMPONENT
 // ============================================
 
-import { useReducer, useEffect, useRef, useCallback } from 'react';
+import { useReducer, useEffect, useRef, useCallback, useState } from 'react';
 import {
   RunState,
   RunEvent,
@@ -14,8 +14,8 @@ import { useMockEventStream, FixtureName } from './useMockEventStream';
 import RunHeader from './RunHeader';
 import TaskList from './TaskList';
 import FinalOutput from './FinalOutput';
-import EmptyState from './EmptyState';
 import AgentThoughts from './AgentThoughts';
+import LiveProgress from './LiveProgress';
 
 // --- Initial State ---
 
@@ -80,6 +80,12 @@ function runReducer(state: RunState, action: Action): RunState {
         retry_count: 0,
         created_at: payload.timestamp,
         updated_at: payload.timestamp,
+        history: [{
+          type: 'status_change',
+          timestamp: payload.timestamp,
+          details: 'Task spawned',
+          status: 'running',
+        }],
       };
       const newTasks = new Map(state.tasks);
       newTasks.set(payload.task_id, newTask);
@@ -100,6 +106,11 @@ function runReducer(state: RunState, action: Action): RunState {
       const updatedTask: Task = {
         ...task,
         tool_calls: [...task.tool_calls, newToolCall],
+        history: [...task.history, {
+          type: 'tool_call',
+          timestamp: action.payload.timestamp,
+          details: `Calling ${action.payload.tool}: ${action.payload.input_summary}`,
+        }],
         updated_at: action.payload.timestamp,
       };
 
@@ -122,6 +133,11 @@ function runReducer(state: RunState, action: Action): RunState {
       const updatedTask: Task = {
         ...task,
         tool_calls: updatedToolCalls,
+        history: [...task.history, {
+          type: 'tool_result',
+          timestamp: action.payload.timestamp,
+          details: `${action.payload.tool} completed: ${action.payload.output_summary}`,
+        }],
         updated_at: action.payload.timestamp,
       };
 
@@ -137,6 +153,11 @@ function runReducer(state: RunState, action: Action): RunState {
       const updatedTask: Task = {
         ...task,
         outputs: [...task.outputs, action.payload],
+        history: [...task.history, {
+          type: 'output',
+          timestamp: action.payload.timestamp,
+          details: action.payload.is_final ? 'Final output generated' : `Partial output: ${action.payload.content.substring(0, 50)}...`,
+        }],
         updated_at: action.payload.timestamp,
       };
 
@@ -149,15 +170,30 @@ function runReducer(state: RunState, action: Action): RunState {
       const task = state.tasks.get(action.payload.task_id);
       if (!task) return state;
 
+      const isRetry = action.payload.status === 'running' && task.status === 'failed';
+
+      let statusLabel: string = action.payload.status;
+      if (isRetry) {
+        statusLabel = `running (retry #${task.retry_count + 1})`;
+      }
+
       const updatedTask: Task = {
         ...task,
         status: action.payload.status,
         error: action.payload.error ?? undefined,
         cancel_reason: action.payload.reason ?? undefined,
         cancel_message: action.payload.message ?? undefined,
-        retry_count: action.payload.status === 'running' && task.status === 'failed'
-          ? task.retry_count + 1
-          : task.retry_count,
+        retry_count: isRetry ? task.retry_count + 1 : task.retry_count,
+        history: [...task.history, {
+          type: 'status_change',
+          timestamp: action.payload.timestamp,
+          details: action.payload.error
+            ? `Failed: ${action.payload.error}`
+            : action.payload.message
+              ? `${statusLabel}: ${action.payload.message}`
+              : statusLabel,
+          status: action.payload.status,
+        }],
         updated_at: action.payload.timestamp,
       };
 
@@ -208,7 +244,47 @@ interface AgentRunPanelProps {
 
 export default function AgentRunPanel({ fixture }: AgentRunPanelProps) {
   const [state, dispatch] = useReducer(runReducer, initialState);
+  const [currentActivity, setCurrentActivity] = useState('Waiting to start...');
   const panelRef = useRef<HTMLDivElement>(null);
+
+  // Update current activity based on latest event
+  const updateActivity = useCallback((event: RunEvent) => {
+    switch (event.type) {
+      case 'run_started':
+        setCurrentActivity('Starting run...');
+        break;
+      case 'agent_thought':
+        setCurrentActivity(`🧠 Coordinator: "${event.thought.substring(0, 60)}..."`);
+        break;
+      case 'task_spawned':
+        setCurrentActivity(`📋 Task spawned: ${event.label}`);
+        break;
+      case 'tool_call':
+        setCurrentActivity(`🔧 Calling ${event.tool}...`);
+        break;
+      case 'tool_result':
+        setCurrentActivity(`✓ ${event.tool} completed`);
+        break;
+      case 'partial_output':
+        setCurrentActivity(`📝 ${event.is_final ? 'Final output' : 'Streaming output'}...`);
+        break;
+      case 'task_update':
+        if (event.status === 'failed') {
+          setCurrentActivity(`❌ Task failed: ${event.error}`);
+        } else if (event.status === 'cancelled') {
+          setCurrentActivity(`⊘ Task cancelled: ${event.message}`);
+        } else if (event.status === 'complete') {
+          setCurrentActivity(`✅ Task completed`);
+        }
+        break;
+      case 'run_complete':
+        setCurrentActivity('✅ Run complete! Review results below.');
+        break;
+      case 'run_error':
+        setCurrentActivity(`⚠️ Error: ${event.message}`);
+        break;
+    }
+  }, []);
 
   // Auto-scroll to bottom when new events arrive (while running)
   useEffect(() => {
@@ -228,6 +304,8 @@ export default function AgentRunPanel({ fixture }: AgentRunPanelProps) {
 
   // Handle incoming events from mock stream
   const handleEvent = useCallback((event: RunEvent) => {
+    updateActivity(event);
+
     switch (event.type) {
       case 'run_started':
         dispatch({ type: 'RUN_STARTED', payload: event });
@@ -257,26 +335,35 @@ export default function AgentRunPanel({ fixture }: AgentRunPanelProps) {
         dispatch({ type: 'RUN_ERROR', payload: event });
         break;
     }
-  }, []);
+  }, [updateActivity]);
 
   // Start mock event stream
   useMockEventStream(fixture ?? null, {
     onEvent: handleEvent,
   });
 
-  // Render based on state
-  if (state.status === 'idle' && !fixture) {
-    return <EmptyState />;
-  }
+  // Count completed tasks
+  const tasksComplete = Array.from(state.tasks.values()).filter(
+    (t) => t.status === 'complete'
+  ).length;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-5xl mx-auto p-6">
+      <div className="max-w-5xl mx-auto">
         {/* Header */}
         <RunHeader
           query={state.query}
           status={state.status}
           elapsedMs={state.elapsed_ms}
+        />
+
+        {/* Live Progress Bar */}
+        <LiveProgress
+          status={state.status}
+          currentEvent={currentActivity}
+          elapsedMs={state.elapsed_ms}
+          tasksTotal={state.tasks.size}
+          tasksComplete={tasksComplete}
         />
 
         {/* Agent Thoughts (Coordinator) */}
@@ -285,16 +372,18 @@ export default function AgentRunPanel({ fixture }: AgentRunPanelProps) {
         )}
 
         {/* Main Content */}
-        <div ref={panelRef} className="space-y-4">
+        <div ref={panelRef} className="space-y-4 p-6">
           {/* Task List */}
-          <TaskList tasks={state.tasks} status={state.status} />
+          {state.tasks.size > 0 && (
+            <TaskList tasks={state.tasks} status={state.status} />
+          )}
 
           {/* Final Output (only when complete) */}
           {state.status === 'complete' && state.final_output && (
             <FinalOutput output={state.final_output} />
           )}
 
-          {/* Error Message */}
+          {/* Error Message (inline, not separate page) */}
           {state.status === 'error' && state.error_message && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <div className="flex items-start gap-3">
@@ -302,8 +391,20 @@ export default function AgentRunPanel({ fixture }: AgentRunPanelProps) {
                 <div>
                   <h3 className="font-semibold text-red-800">Run Failed</h3>
                   <p className="text-red-700 text-sm mt-1">{state.error_message}</p>
+                  <p className="text-red-600 text-xs mt-2">
+                    💡 Partial results may be available in the task list above.
+                  </p>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Empty state message when no tasks yet */}
+          {state.status === 'running' && state.tasks.size === 0 && (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">⏳</div>
+              <p className="text-gray-600 text-lg">Initializing run...</p>
+              <p className="text-gray-500 text-sm mt-2">Tasks will appear shortly</p>
             </div>
           )}
         </div>
