@@ -12,7 +12,7 @@ export default function FinalOutput({ output }: FinalOutputProps) {
       initial={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
       animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
       transition={{ duration: 0.8, ease: 'easeOut' }}
-      className="glass-panel border-cyan-500/20 bg-cyan-500/[0.03] overflow-hidden mt-12"
+      className="glass-panel border-cyan-400/50 bg-cyan-500/[0.03] overflow-hidden mt-12"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent pointer-events-none" />
       

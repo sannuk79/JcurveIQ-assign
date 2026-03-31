@@ -32,28 +32,28 @@ export default function TaskCard({ task }: TaskCardProps) {
 
   const getStatusColor = () => {
     switch (task.status) {
-      case 'complete': return 'border-emerald-500/20 bg-emerald-500/5';
-      case 'failed': return 'border-rose-500/20 bg-rose-500/5';
-      case 'cancelled': return 'border-slate-500/20 bg-slate-500/5';
-      default: return 'border-cyan-500/20 bg-cyan-500/5';
+      case 'complete': return 'border-emerald-500/50 bg-emerald-500/10 shadow-[inset_0_0_20px_rgba(16,185,129,0.1)]';
+      case 'failed': return 'border-rose-500/50 bg-rose-500/10 shadow-[inset_0_0_20px_rgba(244,63,94,0.1)]';
+      case 'cancelled': return 'border-slate-500/50 bg-slate-500/10';
+      default: return 'border-cyan-500/50 bg-cyan-500/10 shadow-[inset_0_0_20px_rgba(34,211,238,0.1)]';
     }
   };
 
   return (
     <motion.div 
       layout
-      className={`glass-panel border ${getStatusColor()} group transition-all duration-300 hover:border-white/20`}
+      className={`glass-panel border ${getStatusColor()} group transition-all duration-300 hover:border-white/40`}
     >
       <div className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3 min-w-0">
-            <div className={`mt-0.5 p-1.5 rounded-lg bg-black/40 border border-white/5`}>
+            <div className={`mt-0.5 p-1.5 rounded-lg bg-black/40 border border-white/10`}>
               {getStatusIcon()}
             </div>
-            <div className="min-w-0">
-              <h3 className="text-sm font-bold text-slate-100 truncate tracking-tight">{task.label}</h3>
-              <div className="flex items-center gap-2 mt-1">
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-slate-100 leading-tight tracking-tight">{task.label}</h3>
+              <div className="flex flex-wrap items-center gap-2 mt-1.5">
                 <span className="flex items-center gap-1 text-[10px] font-mono text-slate-500 bg-white/5 px-1.5 py-0.5 rounded uppercase tracking-wider">
                   <Cpu size={10} />
                   {task.agent}

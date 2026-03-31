@@ -20,8 +20,8 @@ export default function ToolCallList({ toolCalls }: ToolCallListProps) {
         {toolCalls.map((tc, index) => (
           <div
             key={index}
-            className={`text-xs glass-panel overflow-hidden border-white/5 bg-white/[0.02] ${
-              tc.status === 'completed' ? 'border-emerald-500/20' : 'border-cyan-500/20'
+            className={`text-xs glass-panel overflow-hidden bg-white/[0.02] ${
+              tc.status === 'completed' ? 'border-emerald-500/40' : 'border-cyan-500/40'
             }`}
           >
             {/* Tool Call Header */}
@@ -55,7 +55,7 @@ export default function ToolCallList({ toolCalls }: ToolCallListProps) {
 
             {/* Output (if completed) */}
             {tc.output_summary && (
-              <div className="px-3 py-2 bg-emerald-500/[0.02] border-t border-white/5">
+              <div className="px-3 py-2 bg-emerald-500/[0.02] border-t border-white/20">
                 <div className="text-[9px] font-bold text-emerald-900/60 uppercase tracking-wider mb-1">Result Summary:</div>
                 <div className="text-emerald-100/70 text-[10px] leading-relaxed italic">
                   {tc.output_summary}

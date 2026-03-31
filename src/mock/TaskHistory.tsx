@@ -45,16 +45,16 @@ function getEventStyles(event: TaskEvent): string {
       if (event.status === 'failed') return 'text-rose-400 border-rose-500/20 bg-rose-500/5';
       if (event.status === 'cancelled') return 'text-slate-400 border-slate-500/20 bg-white/5';
       if (event.status === 'complete') return 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5';
-      if (event.details.includes('retry')) return 'text-amber-400 border-amber-500/20 bg-amber-500/5';
-      return 'text-cyan-400 border-cyan-500/20 bg-cyan-500/5';
+      if (event.details.includes('retry')) return 'text-amber-400 border-amber-500/40 bg-amber-500/5';
+      return 'text-cyan-400 border-cyan-500/40 bg-cyan-500/5';
     case 'tool_call':
       return 'text-indigo-400 border-indigo-500/20 bg-indigo-500/5';
     case 'tool_result':
-      return 'text-emerald-100/60 border-white/5 bg-white/5';
+      return 'text-emerald-50 border-white/20 bg-white/5';
     case 'output':
-      return 'text-slate-100/60 border-white/5 bg-white/5';
+      return 'text-slate-50 border-white/20 bg-white/5';
     default:
-      return 'text-slate-400 border-white/5 bg-white/5';
+      return 'text-slate-200 border-white/20 bg-white/5';
   }
 }
 
@@ -83,7 +83,7 @@ export default function TaskHistory({ history }: TaskHistoryProps) {
                   <Clock size={8} />
                   {formatTime(event.timestamp)}
                 </span>
-                <span className="font-medium truncate leading-tight">{event.details}</span>
+                <span className="font-medium leading-relaxed">{event.details}</span>
               </div>
             </div>
           </div>

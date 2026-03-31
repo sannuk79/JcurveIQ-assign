@@ -369,7 +369,7 @@ export default function AgentRunPanel({ fixtureName = 'run_success' }: AgentRunP
           status={state.status}
           currentEvent={currentActivity}
           elapsedMs={state.elapsed_ms}
-          tasksTotal={state.tasks.size || 5}
+          tasksTotal={5}
           tasksComplete={tasksComplete}
         />
 

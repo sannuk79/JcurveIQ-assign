@@ -61,7 +61,7 @@ export default function TaskList({ tasks }: TaskListProps) {
       {/* Vertical trunk line (Visual only) */}
       <div className="absolute left-[27px] top-4 bottom-4 w-px bg-gradient-to-b from-white/10 via-white/5 to-transparent pointer-events-none" />
 
-      <div className="space-y-10">
+      <div className="space-y-6">
         <AnimatePresence mode="popLayout">
           {/* Sequential Tasks */}
           {sequentialTasks.length > 0 && (
@@ -117,10 +117,10 @@ export default function TaskList({ tasks }: TaskListProps) {
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-2"
               >
                 {groupTasks.map((task) => (
-                  <motion.div key={task.task_id} variants={itemVariants} layout>
+                  <motion.div key={task.task_id} variants={itemVariants} layout className="h-full">
                     <TaskCard task={task} />
                   </motion.div>
                 ))}

@@ -20,7 +20,7 @@ export default function AgentThoughts({ thoughts }: AgentThoughtsProps) {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       layout
-      className="glass-panel border-purple-500/10 bg-purple-500/5 relative overflow-hidden group"
+      className="glass-panel border-purple-500/30 bg-purple-500/5 relative overflow-hidden group"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent pointer-events-none" />
       

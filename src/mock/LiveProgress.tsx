@@ -88,25 +88,50 @@ export default function LiveProgress({
           </motion.div>
         </div>
 
-        {/* Sub-label indicators */}
-        <div className="flex justify-between mt-2">
-           <div className="flex gap-1">
-             {[...Array(tasksTotal)].map((_, i) => (
-               <motion.div 
-                 key={i}
-                 animate={{ 
-                   opacity: i < tasksComplete ? 1 : 0.3,
-                   backgroundColor: i < tasksComplete ? 'rgba(16,185,129,0.5)' : 'rgba(255,255,255,0.1)'
-                 }}
-                 className="w-4 h-1 rounded-full"
-               />
-             ))}
+        {/* Sub-label indicators / Timeline Dot Strip */}
+        <div className="flex justify-between items-center mt-3 pt-3 border-t border-white/5">
+           <div className="flex items-center gap-2">
+             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mr-2">Timeline</span>
+             <div className="flex gap-1.5 p-1.5 bg-black/40 rounded-full px-3 border border-white/5">
+               {/* Timeline Dot Strip rendering logic */}
+               {[...Array(tasksTotal)].map((_, i) => {
+                 const isPassed = status === 'complete' || i < tasksComplete;
+                 const isActive = status !== 'complete' && i === tasksComplete;
+                 
+                 return (
+                   <motion.div 
+                     key={i}
+                     animate={{ 
+                       opacity: isPassed ? 1 : 0.3,
+                       scale: isActive ? [0.9, 1.2, 0.9] : 1,
+                       backgroundColor: isPassed ? '#10b981' : 
+                                        isActive ? '#22d3ee' : '#334155',
+                       boxShadow: isActive ? '0 0 12px rgba(34,211,238,0.5)' : 'none'
+                     }}
+                     transition={isActive ? { 
+                       repeat: Infinity, 
+                       duration: 1.5,
+                       ease: 'easeInOut' 
+                     } : { duration: 0.4 }}
+                     className="w-2 h-2 rounded-full"
+                   />
+                 );
+               })}
+             </div>
            </div>
-           {status === 'running' && (
-             <span className="text-[9px] text-slate-500 uppercase tracking-widest font-bold animate-pulse">
-               Processing Stream...
-             </span>
-           )}
+           
+           <AnimatePresence mode="wait">
+             {status === 'running' && (
+               <motion.span 
+                 initial={{ opacity: 0, x: 10 }}
+                 animate={{ opacity: 1, x: 0 }}
+                 exit={{ opacity: 0, x: -10 }}
+                 className="text-[9px] text-cyan-400 uppercase tracking-[0.2em] font-black animate-pulse"
+               >
+                 Awaiting Vector Sync...
+               </motion.span>
+             )}
+           </AnimatePresence>
         </div>
       </div>
     </div>
