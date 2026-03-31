@@ -1,230 +1,162 @@
-// ============================================
-// TASK CARD COMPONENT
-// Shows individual task details with status, tools, outputs
-// ============================================
-
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  CheckCircle2, 
+  XCircle, 
+  Clock, 
+  ChevronDown, 
+  ChevronUp, 
+  Cpu, 
+  Terminal,
+  AlertCircle
+} from 'lucide-react';
 import { Task } from '../types';
 import ToolCallList from './ToolCallList';
 import TaskHistory from './TaskHistory';
-import TypingText from './TypingText';
 
 interface TaskCardProps {
   task: Task;
-  isParallel: boolean;
 }
 
-function getStatusDisplay(task: Task) {
-  // Handle retry scenarios
-  if (task.retry_count > 0 && task.status === 'running') {
-    return {
-      bg: 'bg-yellow-50',
-      border: 'border-yellow-300',
-      text: 'text-yellow-800',
-      label: `↻ Retry #${task.retry_count}`,
-      icon: '🔄',
-    };
-  }
-
-  switch (task.status) {
-    case 'running':
-      return {
-        bg: 'bg-blue-50',
-        border: 'border-blue-200',
-        text: 'text-blue-700',
-        label: 'Running',
-        icon: '⏳',
-      };
-    case 'complete':
-      return {
-        bg: 'bg-green-50',
-        border: 'border-green-200',
-        text: 'text-green-700',
-        label: 'Complete',
-        icon: '✓',
-      };
-    case 'failed':
-      return {
-        bg: 'bg-red-50',
-        border: 'border-red-200',
-        text: 'text-red-700',
-        label: 'Failed',
-        icon: '✗',
-      };
-    case 'cancelled':
-      // Cancelled with "sufficient_data" is NOT an error - it's neutral/informational
-      if (task.cancel_reason === 'sufficient_data') {
-        return {
-          bg: 'bg-slate-50',
-          border: 'border-slate-200',
-          text: 'text-slate-600',
-          label: 'Skipped',
-          icon: '⊘',
-        };
-      }
-      return {
-        bg: 'bg-gray-50',
-        border: 'border-gray-200',
-        text: 'text-gray-600',
-        label: 'Cancelled',
-        icon: '⊘',
-      };
-  }
-}
-
-export default function TaskCard({ task, isParallel }: TaskCardProps) {
+export default function TaskCard({ task }: TaskCardProps) {
   const [isExpanded, setIsExpanded] = useState(true);
-  const [typingComplete, setTypingComplete] = useState(false);
-  const [lastOutputContent, setLastOutputContent] = useState('');
-  const status = getStatusDisplay(task);
 
-  // Get the latest output (final if available, otherwise latest partial)
-  const finalOutput = task.outputs.find((o) => o.is_final);
-  const latestOutput = task.outputs[task.outputs.length - 1];
-  const isLatestFinal = latestOutput?.is_final;
-
-  // Get non-final outputs for history
-  const partialOutputs = task.outputs.filter((o) => !o.is_final);
-
-  // Reset typing when output changes
-  useState(() => {
-    if (latestOutput && latestOutput.content !== lastOutputContent) {
-      setLastOutputContent(latestOutput.content);
-      setTypingComplete(false);
+  const getStatusIcon = () => {
+    switch (task.status) {
+      case 'complete': return <CheckCircle2 size={16} className="text-emerald-400" />;
+      case 'failed': return <XCircle size={16} className="text-rose-400" />;
+      case 'cancelled': return <AlertCircle size={16} className="text-slate-500" />;
+      default: return <Clock size={16} className="text-cyan-400 animate-pulse" />;
     }
-  });
+  };
+
+  const getStatusColor = () => {
+    switch (task.status) {
+      case 'complete': return 'border-emerald-500/20 bg-emerald-500/5';
+      case 'failed': return 'border-rose-500/20 bg-rose-500/5';
+      case 'cancelled': return 'border-slate-500/20 bg-slate-500/5';
+      default: return 'border-cyan-500/20 bg-cyan-500/5';
+    }
+  };
 
   return (
-    <div
-      className={`${status.bg} ${status.border} border rounded-lg overflow-hidden transition-all ${isParallel ? 'text-sm' : ''
-        }`}
+    <motion.div 
+      layout
+      className={`glass-panel border ${getStatusColor()} group transition-all duration-300 hover:border-white/20`}
     >
-      {/* Card Header */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 flex items-start gap-3 hover:bg-black/5 transition-colors text-left"
-      >
-        {/* Status Icon */}
-        <span className={`text-lg flex-shrink-0 ${status.text}`}>
-          {status.icon}
-        </span>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className={`font-medium ${status.text}`}>
-              {task.label}
-            </span>
-            <span className={`text-xs px-2 py-0.5 rounded-full ${status.bg} ${status.text} border ${status.border}`}>
-              {status.label}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
-            <span>🤖 {task.agent}</span>
-            {task.depends_on.length > 0 && (
-              <span className="flex items-center gap-1">
-                📎 Depends: {task.depends_on.join(', ')}
-              </span>
-            )}
-          </div>
-
-          {/* Cancel reason message */}
-          {task.status === 'cancelled' && task.cancel_message && (
-            <div className="mt-2 text-xs text-slate-600 italic">
-              ℹ️ {task.cancel_message}
+      <div className="p-4">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3 min-w-0">
+            <div className={`mt-0.5 p-1.5 rounded-lg bg-black/40 border border-white/5`}>
+              {getStatusIcon()}
             </div>
-          )}
-
-          {/* Error message */}
-          {task.status === 'failed' && task.error && (
-            <div className="mt-2 text-xs text-red-600">
-              ⚠️ {task.error}
-            </div>
-          )}
-        </div>
-
-        {/* Expand/Collapse Arrow */}
-        <span className="text-gray-400 text-sm">
-          {isExpanded ? '▼' : '▶'}
-        </span>
-      </button>
-
-      {/* Expanded Content */}
-      {isExpanded && (
-        <div className="px-4 pb-4 space-y-3">
-          {/* Task History Timeline - Shows full lifecycle */}
-          {task.history.length > 0 && (
-            <TaskHistory history={task.history} />
-          )}
-
-          {/* Tool Calls */}
-          {task.tool_calls.length > 0 && (
-            <ToolCallList toolCalls={task.tool_calls} />
-          )}
-
-          {/* Partial Outputs (Streaming) */}
-          {partialOutputs.length > 0 && (
-            <div className="space-y-2">
-              <div className="text-xs font-medium text-gray-500 uppercase">
-                Streaming Updates
-              </div>
-              {partialOutputs.map((output, index) => (
-                <div
-                  key={index}
-                  className="text-xs text-gray-600 bg-white/50 rounded px-3 py-2 border border-gray-200"
-                >
-                  {output.content}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Final Output */}
-          {finalOutput && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-gray-500 uppercase">
-                  Final Output
+            <div className="min-w-0">
+              <h3 className="text-sm font-bold text-slate-100 truncate tracking-tight">{task.label}</h3>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="flex items-center gap-1 text-[10px] font-mono text-slate-500 bg-white/5 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                  <Cpu size={10} />
+                  {task.agent}
                 </span>
-                {finalOutput.quality_score && (
-                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                    Score: {(finalOutput.quality_score * 100).toFixed(0)}%
+                {task.retry_count > 0 && (
+                  <span className="text-[10px] font-bold text-amber-500/80 bg-amber-500/5 px-1.5 py-0.5 rounded border border-amber-500/10 uppercase tracking-tighter">
+                    Retry {task.retry_count}
+                  </span>
+                )}
+                {task.status === 'cancelled' && (
+                  <span className="text-[10px] font-bold text-slate-400 bg-white/5 px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                    {task.cancel_reason || 'Stopped'}
                   </span>
                 )}
               </div>
-              <div className="text-sm text-gray-700 bg-white rounded px-3 py-2 border border-gray-200">
-                {finalOutput.content}
-              </div>
             </div>
-          )}
-
-          {/* Show latest non-final output if no final yet */}
-          {!finalOutput && latestOutput && (
-            <div className="space-y-2">
-              <div className="text-xs font-medium text-gray-500 uppercase flex items-center gap-2">
-                <span className="animate-pulse">●</span> Current Output
-                {!typingComplete && (
-                  <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-                    Typing...
-                  </span>
-                )}
-              </div>
-              <div className="text-sm text-gray-700 bg-white/70 rounded px-3 py-2 border border-gray-200">
-                {isLatestFinal || typingComplete ? (
-                  latestOutput.content
-                ) : (
-                  <TypingText
-                    text={latestOutput.content}
-                    speed={20}
-                    onComplete={() => setTypingComplete(true)}
-                  />
-                )}
-              </div>
-            </div>
-          )}
+          </div>
+          
+          <button 
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500 transition-colors outline-none"
+          >
+            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
         </div>
-      )}
-    </div>
+
+        {/* Current Content Preview (if running/streaming) */}
+        {task.status === 'running' && task.outputs.length > 0 && (
+          <div className="mt-4 pl-11">
+             <div className="text-[11px] text-slate-400 font-mono leading-relaxed bg-black/20 p-2.5 rounded-lg border border-white/5 italic">
+               {task.outputs[task.outputs.length - 1].content}
+               <span className="inline-block w-1 h-3 ml-1 bg-cyan-400 animate-pulse align-middle" />
+             </div>
+          </div>
+        )}
+
+        {/* Status bar */}
+        <div className="mt-4 flex items-center justify-between gap-4 pl-11">
+          <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: task.status === 'complete' ? '100%' : '60%' }}
+              className={`h-full transition-all duration-700 rounded-full ${
+                task.status === 'complete' ? 'bg-emerald-500' : 
+                task.status === 'failed' ? 'bg-rose-500' :
+                task.status === 'cancelled' ? 'bg-slate-600' :
+                'bg-cyan-500 shadow-[0_0_8px_rgba(34,211,238,0.5)]'
+              }`}
+            />
+          </div>
+          <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest min-w-[70px] text-right">
+            {task.status}
+          </span>
+        </div>
+
+        {/* Expanded Details */}
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="overflow-hidden"
+            >
+              <div className="mt-6 pt-6 border-t border-white/5 space-y-6">
+                
+                {/* Final Result Section */}
+                {task.status === 'complete' && task.outputs.length > 0 && (
+                  <div className="pl-11 space-y-2">
+                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                      <Terminal size={12} />
+                      Execution Output
+                    </div>
+                    <div className="text-xs text-slate-200 bg-white/[0.02] p-4 rounded-xl border border-white/5 leading-relaxed whitespace-pre-wrap selection:bg-cyan-500/30">
+                      {task.outputs.find(o => o.is_final)?.content || task.outputs[task.outputs.length-1].content}
+                    </div>
+                  </div>
+                )}
+
+                {/* Agent Activity History */}
+                <div className="pl-11">
+                  <TaskHistory history={task.history} />
+                </div>
+
+                {/* Tool Calls */}
+                {task.tool_calls.length > 0 && (
+                  <div className="pl-11">
+                    <ToolCallList toolCalls={task.tool_calls} />
+                  </div>
+                )}
+
+                {/* Error/Cancellation context */}
+                {(task.error || task.cancel_message) && (
+                  <div className={`mx-4 p-4 rounded-xl border ${task.status === 'failed' ? 'bg-rose-500/5 border-rose-500/10 text-rose-300' : 'bg-slate-500/5 border-slate-500/10 text-slate-300'} text-xs italic leading-relaxed`}>
+                     {task.error || task.cancel_message}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
   );
 }

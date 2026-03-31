@@ -3,6 +3,7 @@
 // Shows tool calls and their results within a task
 // ============================================
 
+import { Terminal, CheckCircle2, Clock } from 'lucide-react';
 import { ToolCall } from '../types';
 
 interface ToolCallListProps {
@@ -12,40 +13,51 @@ interface ToolCallListProps {
 export default function ToolCallList({ toolCalls }: ToolCallListProps) {
   return (
     <div className="space-y-2">
-      <div className="text-xs font-medium text-gray-500 uppercase">
+      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1">
         Tool Calls
       </div>
       <div className="space-y-2">
         {toolCalls.map((tc, index) => (
           <div
             key={index}
-            className="text-xs bg-white rounded border border-gray-200 overflow-hidden"
+            className={`text-xs glass-panel overflow-hidden border-white/5 bg-white/[0.02] ${
+              tc.status === 'completed' ? 'border-emerald-500/20' : 'border-cyan-500/20'
+            }`}
           >
             {/* Tool Call Header */}
-            <div className="px-3 py-2 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
-              <span className="font-mono text-gray-700">
-                {tc.tool}
-              </span>
+            <div className="px-3 py-1.5 bg-white/5 border-b border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <Terminal size={12} className="text-slate-500" />
+                <span className="font-mono text-[10px] font-bold text-slate-300 tracking-tight uppercase">
+                  {tc.tool}
+                </span>
+              </div>
               {tc.status === 'completed' ? (
-                <span className="text-green-600">✓</span>
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400">
+                  <CheckCircle2 size={10} />
+                  <span>Success</span>
+                </div>
               ) : (
-                <span className="text-blue-500 animate-pulse">⏳</span>
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-cyan-400 animate-pulse">
+                   <Clock size={10} />
+                   <span>Active</span>
+                </div>
               )}
             </div>
 
             {/* Input */}
             <div className="px-3 py-2">
-              <div className="text-gray-500 text-xs mb-1">Input:</div>
-              <div className="text-gray-700 font-mono text-xs">
+              <div className="text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-1">Parameters:</div>
+              <div className="text-slate-400 font-mono text-[10px] leading-relaxed break-all bg-black/20 p-1.5 rounded">
                 {tc.input_summary}
               </div>
             </div>
 
             {/* Output (if completed) */}
             {tc.output_summary && (
-              <div className="px-3 py-2 bg-green-50 border-t border-gray-200">
-                <div className="text-gray-500 text-xs mb-1">Output:</div>
-                <div className="text-gray-700 text-xs">
+              <div className="px-3 py-2 bg-emerald-500/[0.02] border-t border-white/5">
+                <div className="text-[9px] font-bold text-emerald-900/60 uppercase tracking-wider mb-1">Result Summary:</div>
+                <div className="text-emerald-100/70 text-[10px] leading-relaxed italic">
                   {tc.output_summary}
                 </div>
               </div>

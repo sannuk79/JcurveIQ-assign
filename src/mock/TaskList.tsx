@@ -1,8 +1,5 @@
-// ============================================
-// TASK LIST COMPONENT
-// Groups parallel tasks and renders sequential ones
-// ============================================
-
+import { motion, AnimatePresence } from 'framer-motion';
+import { Zap, Brain } from 'lucide-react';
 import { Task, RunStatus } from '../types';
 import TaskCard from './TaskCard';
 
@@ -11,11 +8,34 @@ interface TaskListProps {
   status: RunStatus;
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15, scale: 0.98 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: { 
+      type: 'spring' as const,
+      stiffness: 100,
+      damping: 15
+    }
+  },
+};
+
 export default function TaskList({ tasks }: TaskListProps) {
-  // Convert Map to array
   const taskArray = Array.from(tasks.values());
 
-  // Separate synthesis tasks (they should appear last, before final output)
+  // Separate synthesis tasks
   const synthesisTasks = taskArray.filter((task) =>
     task.agent === 'synthesizer' || task.label.toLowerCase().includes('synthes')
   );
@@ -24,97 +44,118 @@ export default function TaskList({ tasks }: TaskListProps) {
     task.agent !== 'synthesizer' && !task.label.toLowerCase().includes('synthes')
   );
 
-  // Group non-synthesis tasks by parallel_group
+  // Group by parallel_group
   const groupedTasks = new Map<string | null, Task[]>();
-
   nonSynthesisTasks.forEach((task) => {
     const key = task.parallel_group;
     const existing = groupedTasks.get(key) || [];
     groupedTasks.set(key, [...existing, task]);
   });
 
-  // Separate sequential (null group) from parallel groups
   const sequentialTasks = groupedTasks.get(null) || [];
   const parallelGroups = Array.from(groupedTasks.entries())
     .filter(([key]) => key !== null);
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-        Task Execution ({taskArray.length} tasks)
-      </h2>
+    <div className="space-y-8 relative">
+      {/* Vertical trunk line (Visual only) */}
+      <div className="absolute left-[27px] top-4 bottom-4 w-px bg-gradient-to-b from-white/10 via-white/5 to-transparent pointer-events-none" />
 
-      <div className="space-y-4">
-        {/* Sequential Tasks (non-synthesis) */}
-        {sequentialTasks.map((task) => (
-          <TaskCard key={task.task_id} task={task} isParallel={false} />
-        ))}
+      <div className="space-y-10">
+        <AnimatePresence mode="popLayout">
+          {/* Sequential Tasks */}
+          {sequentialTasks.length > 0 && (
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="space-y-4"
+            >
+              {sequentialTasks.map((task) => (
+                <motion.div 
+                  key={task.task_id} 
+                  variants={itemVariants}
+                  layout
+                  className="relative pl-12"
+                >
+                  {/* Connector dot */}
+                  <div className="absolute left-[25px] top-6 w-1.5 h-1.5 rounded-full bg-slate-700 border border-black z-10" />
+                  <TaskCard task={task} />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
 
-        {/* Parallel Task Groups */}
-        {parallelGroups.map(([groupId, groupTasks]) => (
-          <div key={groupId} className="space-y-2">
-            {/* Group Header with visual indicator of simultaneity */}
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-400 to-transparent"></div>
-              <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-1.5 rounded-full border border-blue-300 shadow-sm">
-                <span className="text-lg">⚡</span>
-                <span className="text-xs font-bold text-blue-700 uppercase tracking-wide">
-                  Parallel Execution
-                </span>
-                <span className="text-xs font-mono text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
-                  {groupId}
-                </span>
-                <span className="text-xs text-blue-600">
-                  ({groupTasks.length} tasks running simultaneously)
-                </span>
-              </div>
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-400 to-transparent"></div>
-            </div>
-
-            {/* Visual connector lines for parallel tasks */}
-            <div className="relative">
-              {/* Background connector */}
-              <div className="absolute inset-0 flex items-start justify-center pointer-events-none">
-                <div className="w-px h-8 bg-gradient-to-b from-blue-300 to-transparent"></div>
+          {/* Parallel Task Groups */}
+          {parallelGroups.map(([groupId, groupTasks]) => (
+            <motion.div 
+              key={groupId}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              layout
+              className="space-y-4 relative pl-12"
+            >
+              {/* Trunk connector to group */}
+              <div className="absolute left-[25px] top-0 bottom-0 w-px bg-white/10" />
+              
+              {/* Group Header */}
+              <div className="flex items-center gap-3 relative">
+                 <div className="absolute -left-[23px] w-5 h-px bg-white/10" />
+                 <div className="flex items-center gap-2 bg-white/[0.03] border border-white/5 py-1 px-3 rounded-full">
+                    <Zap size={10} className="text-cyan-400 fill-cyan-400/20" />
+                    <span className="text-[10px] font-bold text-cyan-400/80 tracking-widest uppercase italic">
+                      Parallel Batch
+                    </span>
+                    <span className="text-[9px] text-slate-500 font-mono">
+                      {groupId}
+                    </span>
+                 </div>
               </div>
 
               {/* Horizontal layout for parallel tasks */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-4">
+              <motion.div 
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2"
+              >
                 {groupTasks.map((task) => (
-                  <div key={task.task_id} className="relative">
-                    {/* Individual connector dot */}
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-2 h-2 bg-blue-400 rounded-full border-2 border-white shadow"></div>
-                    <TaskCard task={task} isParallel={true} />
+                  <motion.div key={task.task_id} variants={itemVariants} layout>
+                    <TaskCard task={task} />
+                  </motion.div>
+                ))}
+              </motion.div>
+            </motion.div>
+          ))}
+
+          {/* Synthesis Tasks */}
+          {synthesisTasks.length > 0 && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              layout
+              className="space-y-6 pt-4"
+            >
+              <div className="flex items-center gap-4 pl-12">
+                <div className="h-px flex-1 bg-gradient-to-r from-purple-500/30 to-transparent" />
+                <div className="flex items-center gap-2 text-purple-400">
+                  <Brain size={14} />
+                  <span className="text-[10px] font-bold tracking-widest uppercase">Process Synthesis</span>
+                </div>
+                <div className="h-px flex-1 bg-gradient-to-l from-purple-500/30 to-transparent" />
+              </div>
+              
+              <div className="space-y-4">
+                {synthesisTasks.map((task) => (
+                  <div key={task.task_id} className="pl-12">
+                     <TaskCard task={task} />
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-        ))}
-
-        {/* Synthesis Tasks - Always at the end (before Final Output) */}
-        {synthesisTasks.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-400 to-transparent"></div>
-              <div className="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 px-4 py-1.5 rounded-full border border-purple-300 shadow-sm">
-                <span className="text-lg">🧠</span>
-                <span className="text-xs font-bold text-purple-700 uppercase tracking-wide">
-                  Synthesis
-                </span>
-                <span className="text-xs text-purple-600">
-                  (Combining all results)
-                </span>
-              </div>
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-400 to-transparent"></div>
-            </div>
-            <div className="pt-4">
-              {synthesisTasks.map((task) => (
-                <TaskCard key={task.task_id} task={task} isParallel={false} />
-              ))}
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

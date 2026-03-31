@@ -64,10 +64,9 @@ export function useMockEventStream(
     console.log(`📦 Total events: ${fixture.events.length}`);
     console.log(`⏱️ Total duration: ${(fixture.events[fixture.events.length - 1].timestamp / 1000).toFixed(1)}s`);
 
-    // Schedule each event with realistic timing
+    // Schedule each event at its specified absolute timestamp
     fixture.events.forEach((event: RunEvent, index: number) => {
-      const previousTimestamp = index === 0 ? 0 : fixture.events[index - 1].timestamp;
-      const delay = event.timestamp - previousTimestamp;
+      const delay = event.timestamp;
 
       const timeout = setTimeout(() => {
         if (!isRunningRef.current) return;

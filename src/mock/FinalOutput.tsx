@@ -1,8 +1,5 @@
-// ============================================
-// FINAL OUTPUT COMPONENT
-// Prominent display of the synthesized research output
-// ============================================
-
+import { motion } from 'framer-motion';
+import { Zap, FileText, Quote } from 'lucide-react';
 import { RunCompleteEvent } from '../types';
 
 interface FinalOutputProps {
@@ -11,59 +8,63 @@ interface FinalOutputProps {
 
 export default function FinalOutput({ output }: FinalOutputProps) {
   return (
-    <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-6 mt-8">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <span className="text-3xl">✅</span>
-        <div>
-          <h2 className="text-xl font-bold text-green-900">
-            Research Complete
-          </h2>
-          <p className="text-green-700 text-sm">
-            Synthesized analysis ready for review
-          </p>
-        </div>
-      </div>
-
-      {/* Summary */}
-      <div className="bg-white rounded-lg border border-green-200 p-5 mb-4">
-        <h3 className="text-sm font-semibold text-green-800 uppercase tracking-wide mb-3">
-          Analysis Summary
-        </h3>
-        <div className="text-gray-800 leading-relaxed whitespace-pre-line">
-          {output.summary}
-        </div>
-      </div>
-
-      {/* Citations */}
-      {output.citations.length > 0 && (
-        <div className="bg-white/70 rounded-lg border border-green-200 p-4">
-          <h3 className="text-sm font-semibold text-green-800 uppercase tracking-wide mb-3">
-            📚 Sources & Citations
-          </h3>
-          <div className="space-y-2">
-            {output.citations.map((citation) => (
-              <div
-                key={citation.ref_id}
-                className="flex items-start gap-3 text-sm text-gray-700"
-              >
-                <span className="font-mono text-green-600 bg-green-100 px-2 py-0.5 rounded">
-                  [{citation.ref_id}]
-                </span>
-                <div className="flex-1">
-                  <span className="font-medium">{citation.title}</span>
-                  <span className="text-gray-500"> — {citation.source}</span>
-                  {citation.page && (
-                    <span className="text-gray-400 text-xs ml-2">
-                      (p. {citation.page})
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
+      animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+      transition={{ duration: 0.8, ease: 'easeOut' }}
+      className="glass-panel border-cyan-500/20 bg-cyan-500/[0.03] overflow-hidden mt-12"
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent pointer-events-none" />
+      
+      <div className="p-8">
+        <div className="flex items-center gap-5 mb-8">
+          <div className="p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.2)]">
+            <Zap size={24} fill="currentColor" className="opacity-80" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-slate-100 tracking-tight">Research Synthesis Complete</h2>
+            <p className="text-[10px] text-cyan-500/60 uppercase tracking-[0.2em] font-bold">Comprehensive Analysis Generated</p>
           </div>
         </div>
-      )}
-    </div>
+
+        <div className="space-y-10">
+          {/* Summary Section */}
+          <div className="space-y-4">
+             <div className="flex items-center gap-2 text-slate-400">
+               <FileText size={16} />
+               <h3 className="text-xs font-bold uppercase tracking-widest italic">Core Synthesis</h3>
+             </div>
+             <div className="text-base text-slate-200 leading-relaxed font-medium selection:bg-cyan-500/30">
+               {output.summary.split('\n\n').map((paragraph, i) => (
+                 <p key={i} className={i > 0 ? 'mt-4' : ''}>
+                   {paragraph}
+                 </p>
+               ))}
+             </div>
+          </div>
+
+          {/* Citations Grid */}
+          <div className="space-y-6 pt-6 border-t border-white/5">
+            <div className="flex items-center gap-2 text-slate-400">
+              <Quote size={16} />
+              <h3 className="text-xs font-bold uppercase tracking-widest italic">Key Sources</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {output.citations.map((cite) => (
+                <motion.div 
+                  key={cite.ref_id}
+                  whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.02)' }}
+                  className="p-4 rounded-xl border border-white/5 bg-white/[0.01] group cursor-default transition-all"
+                >
+                  <div className="text-[10px] text-cyan-500/60 font-bold mb-1 uppercase tracking-tight">{cite.source}</div>
+                  <div className="text-sm font-bold text-slate-200 group-hover:text-cyan-400 transition-colors">{cite.title}</div>
+                  <div className="text-[10px] text-slate-600 mt-2 font-mono">Page {cite.page} • REF_{cite.ref_id}</div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 }

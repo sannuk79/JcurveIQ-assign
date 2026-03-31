@@ -3,6 +3,7 @@
 // Shows the full lifecycle of a task (failed → retry → etc.)
 // ============================================
 
+import { History, CheckCircle2, XCircle, Slash, RefreshCw, Terminal, FileText, Activity, Clock } from 'lucide-react';
 import { TaskEvent } from '../types';
 
 interface TaskHistoryProps {
@@ -19,41 +20,41 @@ function formatTime(timestamp: number): string {
   });
 }
 
-function getEventIcon(event: TaskEvent): string {
+function getEventIcon(event: TaskEvent) {
   switch (event.type) {
     case 'status_change':
-      if (event.status === 'failed') return '❌';
-      if (event.status === 'cancelled') return '⊘';
-      if (event.status === 'complete') return '✅';
-      if (event.status === 'running') return '🔄';
-      return '📍';
+      if (event.status === 'failed') return <XCircle size={10} />;
+      if (event.status === 'cancelled') return <Slash size={10} />;
+      if (event.status === 'complete') return <CheckCircle2 size={10} />;
+      if (event.status === 'running') return <RefreshCw size={10} className="animate-spin-slow" />;
+      return <Activity size={10} />;
     case 'tool_call':
-      return '🔧';
+      return <Terminal size={10} />;
     case 'tool_result':
-      return '✓';
+      return <CheckCircle2 size={10} />;
     case 'output':
-      return '📝';
+      return <FileText size={10} />;
     default:
-      return '•';
+      return <Activity size={10} />;
   }
 }
 
-function getEventStyle(event: TaskEvent): string {
+function getEventStyles(event: TaskEvent): string {
   switch (event.type) {
     case 'status_change':
-      if (event.status === 'failed') return 'bg-red-50 text-red-700 border-red-200';
-      if (event.status === 'cancelled') return 'bg-slate-50 text-slate-600 border-slate-200';
-      if (event.status === 'complete') return 'bg-green-50 text-green-700 border-green-200';
-      if (event.details.includes('retry')) return 'bg-yellow-50 text-yellow-700 border-yellow-200';
-      return 'bg-blue-50 text-blue-700 border-blue-200';
+      if (event.status === 'failed') return 'text-rose-400 border-rose-500/20 bg-rose-500/5';
+      if (event.status === 'cancelled') return 'text-slate-400 border-slate-500/20 bg-white/5';
+      if (event.status === 'complete') return 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5';
+      if (event.details.includes('retry')) return 'text-amber-400 border-amber-500/20 bg-amber-500/5';
+      return 'text-cyan-400 border-cyan-500/20 bg-cyan-500/5';
     case 'tool_call':
-      return 'bg-purple-50 text-purple-700 border-purple-200';
+      return 'text-indigo-400 border-indigo-500/20 bg-indigo-500/5';
     case 'tool_result':
-      return 'bg-green-50 text-green-700 border-green-200';
+      return 'text-emerald-100/60 border-white/5 bg-white/5';
     case 'output':
-      return 'bg-gray-50 text-gray-700 border-gray-200';
+      return 'text-slate-100/60 border-white/5 bg-white/5';
     default:
-      return 'bg-gray-50 text-gray-700 border-gray-200';
+      return 'text-slate-400 border-white/5 bg-white/5';
   }
 }
 
@@ -62,24 +63,27 @@ export default function TaskHistory({ history }: TaskHistoryProps) {
 
   return (
     <div className="space-y-2">
-      <div className="text-xs font-medium text-gray-500 uppercase flex items-center gap-2">
-        <span>📜</span> Task Timeline
-        <span className="text-gray-400 font-normal">({history.length} events)</span>
+      <div className="flex items-center gap-2 pl-1">
+        <History size={10} className="text-slate-500" />
+        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+          Lifecycle Log
+        </div>
       </div>
       
-      <div className="space-y-1.5">
+      <div className="space-y-1">
         {history.map((event, index) => (
           <div
             key={index}
-            className={`text-xs rounded border px-2.5 py-1.5 flex items-start gap-2 ${getEventStyle(event)}`}
+            className={`text-[10px] rounded border px-3 py-2 flex items-start gap-4 transition-colors ${getEventStyles(event)}`}
           >
-            <span className="flex-shrink-0">{getEventIcon(event)}</span>
+            <span className="flex-shrink-0 opacity-60 mt-0.5">{getEventIcon(event)}</span>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-[10px] opacity-60">
+              <div className="flex items-center gap-3">
+                <span className="font-mono opacity-50 tabular-nums flex items-center gap-1">
+                  <Clock size={8} />
                   {formatTime(event.timestamp)}
                 </span>
-                <span className="font-medium truncate">{event.details}</span>
+                <span className="font-medium truncate leading-tight">{event.details}</span>
               </div>
             </div>
           </div>

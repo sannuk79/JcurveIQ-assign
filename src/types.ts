@@ -156,6 +156,7 @@ export interface RunState {
   error_message: string | null;
   start_time: number | null;
   elapsed_ms: number;
+  last_event_type: string | null;
 }
 
 // --- Fixture Types ---
