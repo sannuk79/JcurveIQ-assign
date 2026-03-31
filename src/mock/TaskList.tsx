@@ -15,10 +15,19 @@ export default function TaskList({ tasks }: TaskListProps) {
   // Convert Map to array
   const taskArray = Array.from(tasks.values());
 
-  // Group tasks by parallel_group
+  // Separate synthesis tasks (they should appear last, before final output)
+  const synthesisTasks = taskArray.filter((task) =>
+    task.agent === 'synthesizer' || task.label.toLowerCase().includes('synthes')
+  );
+
+  const nonSynthesisTasks = taskArray.filter((task) =>
+    task.agent !== 'synthesizer' && !task.label.toLowerCase().includes('synthes')
+  );
+
+  // Group non-synthesis tasks by parallel_group
   const groupedTasks = new Map<string | null, Task[]>();
 
-  taskArray.forEach((task) => {
+  nonSynthesisTasks.forEach((task) => {
     const key = task.parallel_group;
     const existing = groupedTasks.get(key) || [];
     groupedTasks.set(key, [...existing, task]);
@@ -36,7 +45,7 @@ export default function TaskList({ tasks }: TaskListProps) {
       </h2>
 
       <div className="space-y-4">
-        {/* Sequential Tasks */}
+        {/* Sequential Tasks (non-synthesis) */}
         {sequentialTasks.map((task) => (
           <TaskCard key={task.task_id} task={task} isParallel={false} />
         ))}
@@ -82,6 +91,30 @@ export default function TaskList({ tasks }: TaskListProps) {
             </div>
           </div>
         ))}
+
+        {/* Synthesis Tasks - Always at the end (before Final Output) */}
+        {synthesisTasks.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-400 to-transparent"></div>
+              <div className="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 px-4 py-1.5 rounded-full border border-purple-300 shadow-sm">
+                <span className="text-lg">🧠</span>
+                <span className="text-xs font-bold text-purple-700 uppercase tracking-wide">
+                  Synthesis
+                </span>
+                <span className="text-xs text-purple-600">
+                  (Combining all results)
+                </span>
+              </div>
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-400 to-transparent"></div>
+            </div>
+            <div className="pt-4">
+              {synthesisTasks.map((task) => (
+                <TaskCard key={task.task_id} task={task} isParallel={false} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

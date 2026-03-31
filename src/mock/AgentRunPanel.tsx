@@ -378,7 +378,7 @@ export default function AgentRunPanel({ fixture }: AgentRunPanelProps) {
             <TaskList tasks={state.tasks} status={state.status} />
           )}
 
-          {/* Final Output (only when complete) */}
+          {/* Final Output (only when complete) - ALWAYS at bottom */}
           {state.status === 'complete' && state.final_output && (
             <FinalOutput output={state.final_output} />
           )}
