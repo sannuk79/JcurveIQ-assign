@@ -67,7 +67,7 @@ Analytics show that users never read partial outputs, or if partial outputs are 
 ## 4. Cancelled State Treatment (sufficient_data)
 
 **Decision:** Display `cancelled` with `reason: "sufficient_data"` as a **neutral** state using slate/gray colors (not red), the label "Skipped" (not "Cancelled"), and the ⊘ icon. The cancel message is shown inline as informational text.
-
+ 
 **Why:**
 
 This is critically important: `sufficient_data` cancellation is **not a failure**. It's an intelligent optimization where the coordinator decided it had enough data from other parallel tasks and stopped redundant work. Treating this as an error would:
@@ -134,3 +134,41 @@ The CLI tool becomes unavailable or the standard Vite/CRA templates add better d
 | Cancelled State | Neutral (slate), "Skipped" | Not an error—optimization |
 | Dependencies | Text badges, no graph | Simplicity for target users |
 | Project Setup | Custom CLI tool | Fast, consistent scaffolding |
+
+---
+
+## Reflection: Agentic State & Event Schema
+
+### Hardest Part to Make Legible: Retry Sequences
+
+The `failed` → `running` (retry) → `complete` chain was the most challenging state to render correctly. The problem: when a task first hits `failed` status, users instinctively think "broken." But in our system, failure is often temporary—the coordinator retries automatically.
+
+**Solution:** The `history` array in each task preserves the full lifecycle. Instead of just showing `status: failed`, the UI renders:
+```
+⏳ Running → ⚠️ Failed (rate limit) → 🔄 Retrying (#1) → ✓ Complete
+```
+
+This narrative view transforms what could look like an error into a story of recovery—building trust rather than alarm.
+
+### Event Schema Change: Add `sequence_number`
+
+Currently, events are ordered by `timestamp` alone. This works until multiple events share the same millisecond (common with parallel tool results). The frontend then relies on JavaScript's event loop order, which is non-deterministic across browsers.
+
+**Proposed change:**
+```json
+{
+  "type": "tool_result",
+  "run_id": "r_001",
+  "sequence_number": 47,  // ← New field
+  "task_id": "t_002",
+  "timestamp": 1700000015000
+}
+```
+
+A simple incrementing integer per `run_id` would:
+1. Make ordering deterministic
+2. Simplify the reducer (no timestamp comparisons)
+3. Enable gap detection (missing sequence = dropped event)
+4. Help with debugging ("what happened between event 45 and 48?")
+
+This is a small addition with outsized benefits for frontend simplicity and reliability.

@@ -180,6 +180,12 @@ See [DECISIONS.md](./DECISIONS.md) for detailed reasoning on:
 
 6. **Mobile Optimization**: Parallel task grid could be more responsive on small screens.
 
+## 📧 Submission Note
+
+**Hardest part to make legible:** The retry sequence (`failed` → `running` → `complete`) was challenging to display without alarming users. Initially, a failed task looked like a permanent error. I solved this by adding a `history` array to each task that shows the full journey—including retry count and recovery—so users see it as a temporary setback, not a failure.
+
+**Event schema change I'd make:** Add an explicit `sequence_number` field to each event. Currently, events rely on `timestamp` for ordering, but when multiple events fire at the same millisecond (e.g., parallel tool results), the frontend must infer order. A simple incrementing sequence number per `run_id` would make ordering deterministic and simplify the reducer logic.
+
 ## 📄 License
 
 Internal use only - JcurveIQ take-home assessment.
