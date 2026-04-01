@@ -1,6 +1,3 @@
-// ============================================
-// AGENT RUN PANEL - MAIN COMPONENT
-// ============================================
 
 import { useReducer, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Play, RotateCcw, Activity } from 'lucide-react';
@@ -255,7 +252,7 @@ export default function AgentRunPanel({ fixtureName = 'run_success' }: AgentRunP
   const onError = useCallback((err: string) => console.error('Run failed:', err), []);
 
   const { restart, stop, isRunning } = useMockEventStream(
-    hasStarted ? fixtureName : null, 
+    hasStarted ? fixtureName : null,
     { onEvent, onComplete, onError }
   );
 
@@ -285,7 +282,7 @@ export default function AgentRunPanel({ fixtureName = 'run_success' }: AgentRunP
 
   // Derived Values
   const tasksComplete = Array.from(state.tasks.values()).filter(t => t.status === 'complete').length;
-  
+
   const currentActivity = useMemo(() => {
     if (state.status === 'idle') return 'System Initialized';
     if (state.status === 'complete') return 'Research Synthesis Finalized';
@@ -315,41 +312,40 @@ export default function AgentRunPanel({ fixtureName = 'run_success' }: AgentRunP
   // Auto-scroll logic
   useEffect(() => {
     if (state.status === 'running' && panelRef.current) {
-       window.scrollTo({
-         top: document.documentElement.scrollHeight,
-         behavior: 'smooth',
-       });
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'smooth',
+      });
     }
   }, [state.tasks.size, state.thoughts.length, state.status]);
 
   return (
     <div className="min-h-screen">
       <div className="max-w-5xl mx-auto pb-20">
-        
+
         {/* Control Bar */}
         <div className="sticky top-0 z-50 px-4 py-3 bg-black/40 backdrop-blur-md border-b border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-             <div className={`w-2 h-2 rounded-full ${isRunning ? 'bg-cyan-400 animate-pulse' : 'bg-slate-600'}`} />
-             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-               {isRunning ? 'Simulation Active' : 'System Standby'}
-             </span>
+            <div className={`w-2 h-2 rounded-full ${isRunning ? 'bg-cyan-400 animate-pulse' : 'bg-slate-600'}`} />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              {isRunning ? 'Simulation Active' : 'System Standby'}
+            </span>
           </div>
           <div className="flex items-center gap-2">
-            <button 
+            <button
               onClick={handleReset}
               className="p-2 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 transition-all outline-none"
               title="Reset Process"
             >
               <RotateCcw size={16} />
             </button>
-            <button 
+            <button
               onClick={handleStart}
               disabled={isRunning}
-              className={`flex items-center gap-2 px-4 py-1.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-all outline-none ${
-                isRunning 
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-white/5 shadow-none' 
-                : 'bg-cyan-500 text-black hover:bg-cyan-400 border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.3)]'
-              }`}
+              className={`flex items-center gap-2 px-4 py-1.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-all outline-none ${isRunning
+                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-white/5 shadow-none'
+                  : 'bg-cyan-500 text-black hover:bg-cyan-400 border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.3)]'
+                }`}
             >
               <Play size={14} fill={isRunning ? 'none' : 'currentColor'} />
               {state.status === 'complete' ? 'Re-Run' : 'Start Process'}
@@ -375,7 +371,7 @@ export default function AgentRunPanel({ fixtureName = 'run_success' }: AgentRunP
 
         <div className="px-6 py-8">
           <div className="max-w-4xl mx-auto space-y-6">
-            
+
             {/* Empty State before start */}
             {state.status === 'idle' && (
               <div className="py-24 text-center glass-panel bg-white/[0.01] border-white/5">
@@ -410,11 +406,11 @@ export default function AgentRunPanel({ fixtureName = 'run_success' }: AgentRunP
             {state.status === 'error' && state.error_message && (
               <div className="glass-panel border-rose-500/20 bg-rose-500/5 p-6 animate-in slide-in-from-bottom-4">
                 <div className="flex items-start gap-4">
-                   <span className="text-rose-500">⚠️</span>
-                   <div>
+                  <span className="text-rose-500">⚠️</span>
+                  <div>
                     <h3 className="font-bold text-rose-400 tracking-tight">Execution Halted</h3>
                     <p className="text-rose-300 text-sm mt-1 opacity-80 leading-relaxed">{state.error_message}</p>
-                   </div>
+                  </div>
                 </div>
               </div>
             )}

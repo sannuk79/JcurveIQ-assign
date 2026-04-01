@@ -1,7 +1,4 @@
-// ============================================
-// EMPTY STATE COMPONENT
-// Shown when no run is active
-// ============================================
+
 
 export default function EmptyState() {
   return (

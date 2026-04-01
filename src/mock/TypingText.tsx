@@ -1,7 +1,4 @@
-// ============================================
-// TYPING TEXT COMPONENT
-// Animates text as if being typed in real-time
-// ============================================
+
 
 import { useState, useEffect } from 'react';
 
@@ -11,10 +8,10 @@ interface TypingTextProps {
   onComplete?: () => void;
 }
 
-export default function TypingText({ 
-  text, 
+export default function TypingText({
+  text,
   speed = 30,
-  onComplete 
+  onComplete
 }: TypingTextProps) {
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);

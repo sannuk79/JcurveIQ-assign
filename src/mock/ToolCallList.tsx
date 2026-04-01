@@ -1,7 +1,4 @@
-// ============================================
-// TOOL CALL LIST COMPONENT
-// Shows tool calls and their results within a task
-// ============================================
+
 
 import { Terminal, CheckCircle2, Clock } from 'lucide-react';
 import { ToolCall } from '../types';
@@ -20,9 +17,8 @@ export default function ToolCallList({ toolCalls }: ToolCallListProps) {
         {toolCalls.map((tc, index) => (
           <div
             key={index}
-            className={`text-xs glass-panel overflow-hidden bg-white/[0.02] ${
-              tc.status === 'completed' ? 'border-emerald-500/40' : 'border-cyan-500/40'
-            }`}
+            className={`text-xs glass-panel overflow-hidden bg-white/[0.02] ${tc.status === 'completed' ? 'border-emerald-500/40' : 'border-cyan-500/40'
+              }`}
           >
             {/* Tool Call Header */}
             <div className="px-3 py-1.5 bg-white/5 border-b border-white/5 flex items-center justify-between">
@@ -39,8 +35,8 @@ export default function ToolCallList({ toolCalls }: ToolCallListProps) {
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-cyan-400 animate-pulse">
-                   <Clock size={10} />
-                   <span>Active</span>
+                  <Clock size={10} />
+                  <span>Active</span>
                 </div>
               )}
             </div>

@@ -1,7 +1,4 @@
-// ============================================
-// TASK HISTORY COMPONENT
-// Shows the full lifecycle of a task (failed → retry → etc.)
-// ============================================
+
 
 import { History, CheckCircle2, XCircle, Slash, RefreshCw, Terminal, FileText, Activity, Clock } from 'lucide-react';
 import { TaskEvent } from '../types';
@@ -12,11 +9,11 @@ interface TaskHistoryProps {
 
 function formatTime(timestamp: number): string {
   const date = new Date(timestamp);
-  return date.toLocaleTimeString('en-US', { 
-    hour12: false, 
-    hour: '2-digit', 
-    minute: '2-digit', 
-    second: '2-digit' 
+  return date.toLocaleTimeString('en-US', {
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
   });
 }
 
@@ -69,7 +66,7 @@ export default function TaskHistory({ history }: TaskHistoryProps) {
           Lifecycle Log
         </div>
       </div>
-      
+
       <div className="space-y-1">
         {history.map((event, index) => (
           <div

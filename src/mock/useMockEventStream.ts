@@ -1,7 +1,4 @@
-// ============================================
-// MOCK EVENT STREAM EMITTER
-// Simulates real-time event streaming with realistic timing
-// ============================================
+
 
 import { useEffect, useCallback, useRef } from 'react';
 import { RunEvent, Fixture } from '../types';

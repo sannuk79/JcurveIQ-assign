@@ -1,7 +1,4 @@
-// ============================================
-// RUN HEADER COMPONENT
-// Shows query, status badge, and elapsed time
-// ============================================
+
 
 import { CheckCircle2, XCircle, Activity, Circle, Timer, Search } from 'lucide-react';
 import { RunStatus } from '../types';
@@ -63,7 +60,7 @@ export default function RunHeader({ query, status, elapsedMs }: RunHeaderProps) 
         <div className="flex items-start justify-between gap-6">
           <div className="flex items-start gap-4 flex-1 min-w-0">
             <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 shrink-0">
-               <Search size={20} strokeWidth={1.5} />
+              <Search size={20} strokeWidth={1.5} />
             </div>
             <div className="flex-1 min-w-0 pt-0.5">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-1.5 leading-none">
