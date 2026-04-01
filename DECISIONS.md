@@ -104,6 +104,26 @@ We start handling runs with complex dependency chains (20+ tasks with interdepen
 
 ---
 
+## 6. Project Setup Using Custom CLI Tool
+
+**Decision:** Used a custom CLI tool to scaffold the project with React, Vite, and Tailwind CSS instead of manual setup commands.
+
+**Why:**
+
+The CLI tool automates the initial project setup in a single command, handling:
+- Vite + React + TypeScript template initialization
+- Tailwind CSS configuration
+- Clean folder structure setup
+- Removal of boilerplate files
+
+This approach ensures consistency across projects and reduces setup time from 10-15 minutes to a single command. The tool handles all the repetitive configuration steps, letting me focus on building the actual component logic rather than wrestling with config files.
+
+**Would Reconsider If:**
+
+The CLI tool becomes unavailable or the standard Vite/CRA templates add better defaults out of the box. For teams without access to this CLI, the manual setup process (`npm create vite@latest`, `npm install -D tailwindcss`, etc.) works equally well—it's just slower.
+
+---
+
 ## Summary Table
 
 | Decision | Choice | Rationale |
@@ -113,3 +133,4 @@ We start handling runs with complex dependency chains (20+ tasks with interdepen
 | Partial Outputs | Inline, separate from final | Real-time feedback + clear hero |
 | Cancelled State | Neutral (slate), "Skipped" | Not an error—optimization |
 | Dependencies | Text badges, no graph | Simplicity for target users |
+| Project Setup | Custom CLI tool | Fast, consistent scaffolding |
