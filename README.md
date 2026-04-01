@@ -9,6 +9,23 @@ A React component that displays live AI agent research runs in real-time, making
 - Node.js 18+
 - npm or yarn
 
+### Project Setup
+
+This project was scaffolded using [`create-clean-react-vite`](https://www.npmjs.com/package/create-clean-react-vite) — a custom CLI tool for fast, clean React + Vite projects.
+
+```bash
+# Create a new project (2-3x faster than manual setup)
+npx create-clean-react-vite myapp
+
+# Or with pnpm for even faster installation
+npx create-clean-react-vite myapp --pnpm
+```
+
+✅ Removes boilerplate clutter  
+✅ Pre-configured with Tailwind CSS  
+✅ Clean folder structure  
+✅ TypeScript ready
+
 ### Installation
 
 ```bash
